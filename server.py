@@ -22,8 +22,11 @@ def solve_challenge(ctx: Context) -> str:
 
 
 if __name__ == "__main__":
-    mcp.run(
-        transport="streamable-http",
+    import uvicorn
+
+    app = mcp.streamable_http_app()
+    uvicorn.run(
+        app,
         host="0.0.0.0",
         port=int(os.environ.get("PORT", "8000")),
     )
