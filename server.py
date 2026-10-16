@@ -2,34 +2,23 @@
 import hashlib
 import os
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.fastmcp import FastMCP, Context
 
 mcp = FastMCP("Exam Challenge Server")
-
 EMAIL = "23f3003450@ds.study.iitm.ac.in"
 
 
 @mcp.tool()
-def solve_challenge() -> str:
-    """Solve the current exam challenge from HTTP request headers."""
-
-    from mcp.server.fastmcp import Context
-
-    # The HTTP request is available through the current request context.
-    # Read the challenge from the current request, not the tool arguments.
-    ctx = mcp.get_context()
+def solve_challenge(ctx: Context) -> str:
+    """Return the challenge hash from the current HTTP request header."""
     request = ctx.request_context.request
-    headers = request.headers
+    challenge = request.headers.get("x-exam-challenge")
 
-    challenge = headers.get("x-exam-challenge")
     if not challenge:
         raise ValueError("Missing X-Exam-Challenge header")
 
-    normalized_email = EMAIL.strip().lower()
-    message = f"{challenge}:{normalized_email}"
-    digest = hashlib.sha256(message.encode("utf-8")).hexdigest()
-
-    return digest[:16]
+    message = f"{challenge}:{EMAIL.strip().lower()}"
+    return hashlib.sha256(message.encode("utf-8")).hexdigest()[:16]
 
 
 if __name__ == "__main__":
